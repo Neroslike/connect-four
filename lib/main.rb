@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Game concept:
 # The game consists on 2 players placing pieces in a board of 6x7
 # The players who gets 4 pieces of their color in horizontal, vertical or diagonal line wins
@@ -27,11 +29,12 @@ require 'pry-byebug'
 class ConnectFour
   attr_accessor :board
 
-  @@RED = "●".colorize(:red)
-  @@YELLOW = "●".colorize(:yellow)
+  RED = '●'.colorize(:red)
+  YELLOW = '●'.colorize(:yellow)
+  ADJ = [[0, -1], [0, 1], [-1, 0], [1, 0], [-1, -1], [1, -1], [-1, 1], [1, 1]].freeze
 
   def initialize
-    @board = @arr = Array.new(7, Array.new(6, @@RED))
+    @board = Array.new(7) { Array.new(6, '●') }
   end
 
   def pretty_print(array = @board, row = 5)
@@ -50,7 +53,39 @@ class ConnectFour
   def display_board
     puts "#{pretty_print}1  2  3  4  5  6  7"
   end
+
+  def empty_slot?(string)
+    string == '●'
+  end
+
+  def last_slot(array, index = -1)
+    return nil if (index + array.length).zero?
+
+    array[index] == '●' ? index : last_slot(array, index - 1)
+  end
+
+  def place_piece(index, color = 1)
+    return nil if (!index.is_a? Integer) || (index > @board.length - 1)
+
+    color = color == 1 ? RED : YELLOW
+
+    @board[index][last_slot(@board[index])] = color
+  end
+
+  def surroundings(x, y)
+    coordinates = [x, y]
+    ADJ.filter_map do |element|
+      mapped = element.filter_map.with_index do |item, index|
+        item + coordinates[index]
+      end
+      mapped if (mapped[0] > -1 && mapped [0] < 7) && (mapped[1] > -1 && mapped [1] < 6)
+    end
+  end
 end
 
-new_board = ConnectFour.new
-new_board.display_board
+# new_board = ConnectFour.new
+# p new_board.surroundings(0, 5)
+# new_board.place_piece(3,)
+# new_board.place_piece(3)
+# new_board.display_board
+# new_board
