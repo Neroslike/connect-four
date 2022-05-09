@@ -84,14 +84,70 @@ describe ConnectFour do
     end
   end
 
-  describe '#surroundings' do
-    context 'when the slot being checked is a corner' do
-      it 'returns only the coordinates that are accessible (0, 5)' do
-        expect(game_board.surroundings(0, 5)).to contain_exactly([0, 4], [1, 4], [1, 5])
+  describe '#four_in_line' do
+    context 'when there is four in a horizontal line' do
+      it 'returns array with the coordinates' do
+        const = described_class::RED
+        game_board.place_piece(0, 1)
+        game_board.place_piece(1, 1)
+        game_board.place_piece(2, 1)
+        game_board.place_piece(3, 1)
+        expect(game_board.four_in_line([0, 5], const)).to contain_exactly([0, 5], [1, 5], [2, 5], [3, 5])
       end
+    end
 
-      it 'returns only the coordinates that are accessible (6, 2)' do
-        expect(game_board.surroundings(6, 2)).to contain_exactly([6, 1], [5, 1], [5, 2], [5, 3], [6, 3])
+    context 'when there is three in a horizontal line' do
+      it 'returns nil' do
+        const = described_class::RED
+        game_board.place_piece(0, 1)
+        game_board.place_piece(1, 1)
+        game_board.place_piece(2, 1)
+        game_board.place_piece(3, 2)
+        expect(game_board.four_in_line([0, 5], const)).to eq(nil)
+      end
+    end
+
+    context 'when there is four in a vertical line' do
+      it 'returns array with the coordinates' do
+        const = described_class::RED
+        game_board.place_piece(0, 1)
+        game_board.place_piece(0, 1)
+        game_board.place_piece(0, 1)
+        game_board.place_piece(0, 1)
+        expect(game_board.four_in_line([0, 5], const)).to contain_exactly([0, 5], [0, 4], [0, 3], [0, 2])
+      end
+    end
+
+    context 'when there is four in a diagonal line' do
+      it 'returns array with the coordinates' do
+        const = described_class::RED
+        game_board.board[0][5] = const
+        game_board.board[1][4] = const
+        game_board.board[2][3] = const
+        game_board.board[3][2] = const
+        expect(game_board.four_in_line([0, 5], const)).to contain_exactly([0, 5], [1, 4], [2, 3], [3, 2])
+      end
+    end
+  end
+
+  describe '#filter_movements' do
+    context 'when the slot is a corner' do
+      it 'returns array with movement coordinates that match the color' do
+        const = described_class::RED
+        game_board.place_piece(0, 1)
+        game_board.place_piece(1, 1)
+        expect(game_board.filter_movements([0, 5], const)).to contain_exactly([1, 0])
+      end
+    end
+
+    context 'when the slot is a corner' do
+      it 'returns array with movement coordinates that match the color' do
+        const = described_class::RED
+        game_board.place_piece(0, 1)
+        game_board.place_piece(0, 1)
+        game_board.place_piece(1, 1)
+        game_board.place_piece(1, 1)
+        expect(game_board.filter_movements([0, 5], const)).to contain_exactly([0, -1], [1, 0], [1, -1])
       end
     end
   end

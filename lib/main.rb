@@ -72,14 +72,44 @@ class ConnectFour
     @board[index][last_slot(@board[index])] = color
   end
 
-  def surroundings(x, y)
-    coordinates = [x, y]
-    ADJ.filter_map do |element|
-      mapped = element.filter_map.with_index do |item, index|
-        item + coordinates[index]
+  def four_in_line(arr, color)
+    # Filter all movements that contain the same color.
+    movements_queue = filter_movements(arr, color)
+
+    movements_queue.length.times do
+      # The next move will be the first element of the queue.
+      next_move = movements_queue.shift
+
+      coordinates = [arr]
+      3.times do
+        # Fill the coordinates array with the possible winning line coordinates.
+        next_coord = [coordinates.last[0] + next_move[0], coordinates.last[1] + next_move[1]]
+        coordinates << next_coord
       end
-      mapped if (mapped[0] > -1 && mapped [0] < 7) && (mapped[1] > -1 && mapped [1] < 6)
+      return coordinates if traverse(arr, next_move, color)
     end
+    return nil if movements_queue.empty?
+  end
+
+  # This method checks the surroundings of the slot and returns
+  # the movement coordinates that contain the same color.
+  def filter_movements(arr, color)
+    ADJ.select { |element| @board[arr[0] + element[0]][arr[1] + element[1]] == color}
+  end
+
+  # Iterate over 3 slots in the direction of the movement coordinates.
+  # Return true if all contains the same color.
+  def traverse(arr, movement, color, result = [])
+    return false if result.include?(false)
+    return true if result.length == 4
+
+    if @board[arr[0]][arr[1]] == color
+      result << @board[arr[0]][arr[1]]
+    else
+      result << false
+    end
+
+    traverse([arr[0] + movement[0], arr[1] + movement[1]], movement, color, result)
   end
 end
 
