@@ -12,7 +12,7 @@ describe ConnectFour do
       it 'return the last unused slot index(2)' do
         game_board.board = ["●", "●", "●", 4]
         board = game_board.board
-        expect(game_board.last_slot(board)).to eql(-2)
+        expect(game_board.last_slot(board)).to eql(2)
       end
     end
 
@@ -24,7 +24,7 @@ describe ConnectFour do
       it 'return the last unused slot(1)' do
         game_board.board = ["●", "●", 5, 4]
         board = game_board.board
-        expect(game_board.last_slot(board)).to eql(-3)
+        expect(game_board.last_slot(board)).to eql(1)
       end
     end
 
@@ -42,7 +42,7 @@ describe ConnectFour do
       const = described_class::RED
       it 'update array value at index' do
         game_board.board = [['●', '●', '●', '●', '●']]
-        game_board.place_piece(0, 1)
+        game_board.place_piece(0, const)
         board = game_board.board
         expect(board[0][-1]).to eq(const)
       end
@@ -59,7 +59,7 @@ describe ConnectFour do
       const = described_class::RED
       it 'place piece at last unused slot' do
         game_board.board = [['●', '●', '●', const, const]]
-        game_board.place_piece(0, 1)
+        game_board.place_piece(0, const)
         expect(game_board.board[0][2]).to eq(const)
       end
     end
@@ -88,10 +88,10 @@ describe ConnectFour do
     context 'when there is four in a horizontal line' do
       it 'returns array with the coordinates' do
         const = described_class::RED
-        game_board.place_piece(0, 1)
-        game_board.place_piece(1, 1)
-        game_board.place_piece(2, 1)
-        game_board.place_piece(3, 1)
+        game_board.place_piece(0, const)
+        game_board.place_piece(1, const)
+        game_board.place_piece(2, const)
+        game_board.place_piece(3, const)
         expect(game_board.four_in_line([0, 5], const)).to contain_exactly([0, 5], [1, 5], [2, 5], [3, 5])
       end
     end
@@ -99,9 +99,9 @@ describe ConnectFour do
     context 'when there is three in a horizontal line' do
       it 'returns nil' do
         const = described_class::RED
-        game_board.place_piece(0, 1)
-        game_board.place_piece(1, 1)
-        game_board.place_piece(2, 1)
+        game_board.place_piece(0, const)
+        game_board.place_piece(1, const)
+        game_board.place_piece(2, const)
         game_board.place_piece(3, 2)
         expect(game_board.four_in_line([0, 5], const)).to eq(nil)
       end
@@ -110,10 +110,10 @@ describe ConnectFour do
     context 'when there is four in a vertical line' do
       it 'returns array with the coordinates' do
         const = described_class::RED
-        game_board.place_piece(0, 1)
-        game_board.place_piece(0, 1)
-        game_board.place_piece(0, 1)
-        game_board.place_piece(0, 1)
+        game_board.place_piece(0, const)
+        game_board.place_piece(0, const)
+        game_board.place_piece(0, const)
+        game_board.place_piece(0, const)
         expect(game_board.four_in_line([0, 5], const)).to contain_exactly([0, 5], [0, 4], [0, 3], [0, 2])
       end
     end
@@ -134,8 +134,8 @@ describe ConnectFour do
     context 'when the slot is a corner' do
       it 'returns array with movement coordinates that match the color' do
         const = described_class::RED
-        game_board.place_piece(0, 1)
-        game_board.place_piece(1, 1)
+        game_board.place_piece(0, const)
+        game_board.place_piece(1, const)
         expect(game_board.filter_movements([0, 5], const)).to contain_exactly([1, 0])
       end
     end
@@ -143,11 +143,55 @@ describe ConnectFour do
     context 'when the slot is a corner' do
       it 'returns array with movement coordinates that match the color' do
         const = described_class::RED
-        game_board.place_piece(0, 1)
-        game_board.place_piece(0, 1)
-        game_board.place_piece(1, 1)
-        game_board.place_piece(1, 1)
+        game_board.place_piece(0, const)
+        game_board.place_piece(0, const)
+        game_board.place_piece(1, const)
+        game_board.place_piece(1, const)
         expect(game_board.filter_movements([0, 5], const)).to contain_exactly([0, -1], [1, 0], [1, -1])
+      end
+    end
+  end
+
+  describe '#get_input' do
+    context 'when input is a number between 0 and 6' do
+      before do
+        valid_input = '4'
+        allow(game_board).to receive(:puts).twice
+        allow(game_board).to receive(:gets).and_return(valid_input).once
+      end
+
+      it 'breaks the loop without sending an error message' do
+        error_message = 'Please enter a number in the valid range (0-6)'
+        expect(game_board).not_to receive(:puts).with(error_message)
+        game_board.get_input(nil)
+      end
+    end
+
+    context 'when input is invalid once, then a valid input' do
+      before do
+        invalid_input = '7'
+        valid_input = '2'
+        allow(game_board).to receive(:puts).thrice
+        allow(game_board).to receive(:gets).and_return(invalid_input, valid_input)
+      end
+
+      it 'sends an error message' do
+        error_message = 'Please enter a number in the valid range (0-6)'
+        expect(game_board).to receive(:puts).with(error_message).once
+        game_board.get_input(nil)
+      end
+    end
+  end
+
+  describe '#traverse' do
+    context 'when there are four in a line' do
+      it 'returns true' do
+        const = described_class::RED
+        game_board.place_piece(0, const)
+        game_board.place_piece(1, const)
+        game_board.place_piece(2, const)
+        game_board.place_piece(3, const)
+        expect(game_board.traverse([0, 5], [1, 0], const)).to be(true)
       end
     end
   end
